@@ -42,12 +42,12 @@ def make_struct(name, data):
     struct_lines.append(f"type {name} struct {{")
     for k, v in data.items():
         if isinstance(v, dict):
-            struct_lines.append(f"{k} {k}")
+            struct_lines.append(f"{k.title()} {k}")
             make_struct(k, v)
         elif isinstance(v, list):
             struct_lines.append(make_list_field(k, v))
         else:
-            field_name = k
+            field_name = k.title()
             gotype = types[type(v).__name__]
             annotation = f'`json:"{k}"`'
             struct_lines.append(f"{field_name} {gotype} {annotation}")
@@ -72,7 +72,7 @@ def make_list_field(keyname, listobj):
     field_name = keyname
     gotype = types[type(listobj[0]).__name__]
     annotation = f'`json:"{keyname}"`' if keyname != "list" else '`json: ""`'
-    return f"{field_name} []{gotype} {annotation}"
+    return f"{field_name.title()} []{gotype} {annotation}"
 
 
 if __name__ == "__main__":
