@@ -27,7 +27,7 @@ types = {
     "str": "string",
     "bool": "bool",
     "dict": "map[string]interface{}",
-    "NoneType": "nil",
+    "NoneType": "int", # This is wrong, but nil is not a valid type in go
     "list":"[]interface{}"
 }
 
