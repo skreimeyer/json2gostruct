@@ -43,12 +43,12 @@ def make_struct(name, data):
     struct_lines.append(f"type {name} struct {{")
     for k, v in data.items():
         if isinstance(v, dict):
-            struct_lines.append(f'{k.title()} {k} `json:"{k}"`')
+            struct_lines.append(f'{k.lower().title().replace("_","")} {k} `json:"{k}"`')
             make_struct(k, v)
         elif isinstance(v, list):
             struct_lines.append(make_list_field(k, v))
         else:
-            field_name = k.title()
+            field_name = k.lower().title().replace("_","")
             gotype = types[type(v).__name__]
             annotation = f'`json:"{k}"`'
             struct_lines.append(f"{field_name} {gotype} {annotation}")
@@ -77,13 +77,13 @@ def make_list_field(keyname, listobj):
             # we're just going to ignore divergent nesting
             gotype = keyname
             annotation = f'`json:"{keyname}"`'
-            return f'{keyname.title()} []{gotype} {annotation}'
+            return f'{keyname.lower().title().replace("_","")} []{gotype} {annotation}'
     # Case: Disparate types
     elif len(set([type(l) for l in listobj])) > 1:
         field_name = keyname
         gotype = "interface{}"
         annotation = '`json:""`'
-        return f"{field_name.title()} []{gotype} {annotation}"
+        return f'{field_name.lower().title().replace("_","")} []{gotype} {annotation}'
     # Case: List of lists
     elif not False in [isinstance(i,list) for i in listobj]:
         recursed_field = make_list_field(keyname,listobj[0])
@@ -94,7 +94,7 @@ def make_list_field(keyname, listobj):
         field_name = keyname
         gotype = types[type(listobj[0]).__name__]
         annotation = f'`json:"{keyname}"`' if keyname != "list" else '`json:""`'
-        return f"{field_name.title()} []{gotype} {annotation}"
+        return f'{field_name.lower().title().replace("_","")} []{gotype} {annotation}'
 
 
 if __name__ == "__main__":
