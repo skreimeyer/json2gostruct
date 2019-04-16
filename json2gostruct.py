@@ -28,6 +28,7 @@ types = {
     "bool": "bool",
     "dict": "map[string]interface{}",
     "NoneType": "nil",
+    "list":"[]interface{}"
 }
 
 
@@ -83,6 +84,11 @@ def make_list_field(keyname, listobj):
         gotype = "interface{}"
         annotation = '`json:""`'
         return f"{field_name.title()} []{gotype} {annotation}"
+    # Case: List of lists
+    elif not False in [isinstance(i,list) for i in listobj]:
+        recursed_field = make_list_field(keyname,listobj[0])
+        insert_index = len(keyname)+1
+        return recursed_field[:insert_index]+"[]"+recursed_field[insert_index:]
     # Case: Same type primitives or maps with dissimilar keys
     else:
         field_name = keyname
