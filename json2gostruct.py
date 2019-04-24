@@ -21,6 +21,7 @@ import json
 import pdb
 from random import randint
 
+
 types = {
     "int": "int",
     "float": "float64",
@@ -34,24 +35,22 @@ types = {
 
 def make_struct(name, data):
     # pdb.set_trace()
-    if isinstance(data, list):
-        print(f"{name} struct {{")
-        print(make_list_field("list", data))
-        print("}\n")
-        return None
     struct_lines = []
     struct_lines.append(f"type {name} struct {{")
-    for k, v in data.items():
-        if isinstance(v, dict):
-            struct_lines.append(f'{k.lower().title().replace("_","")} {k} `json:"{k}"`')
-            make_struct(k, v)
-        elif isinstance(v, list):
-            struct_lines.append(make_list_field(k, v))
-        else:
-            field_name = k.lower().title().replace("_","")
-            gotype = types[type(v).__name__]
-            annotation = f'`json:"{k}"`'
-            struct_lines.append(f"{field_name} {gotype} {annotation}")
+    if isinstance(data, list):
+        struct_lines.append(make_list_field(None, data))
+    if isinstance(data,dict):
+        for k, v in data.items():
+            if isinstance(v, dict):
+                struct_lines.append(f'{k.lower().title().replace("_","")} {k} `json:"{k}"`')
+                make_struct(k, v)
+            elif isinstance(v, list):
+                struct_lines.append(make_list_field(k, v))
+            else:
+                field_name = k.lower().title().replace("_","")
+                gotype = types[type(v).__name__]
+                annotation = f'`json:"{k}"`'
+                struct_lines.append(f"{field_name} {gotype} {annotation}")
     struct_lines.append("}")
     [print(l) for l in struct_lines]
     print("\n")
@@ -71,13 +70,19 @@ def make_list_field(keyname, listobj):
     check the list types and make an appropriate array
     """
     # Case: List of homogenous objects
+    # pdb.set_trace()
+    if not keyname:
+        keyname = "node"
+        annotation = '`json:""`'
+    else:
+        annotation = None # avoid reference before assignment
     if len(set([type(l) for l in listobj])) == 1 and isinstance(listobj[0],dict):
-        if not False in [listobj[0].keys() == l.keys() for l in listobj]:
-            make_struct(keyname,listobj[0])
-            # we're just going to ignore divergent nesting
-            gotype = keyname
-            annotation = f'`json:"{keyname}"`'
-            return f'{keyname.lower().title().replace("_","")} []{gotype} {annotation}'
+        # We aren't actually testing if all keys are the same. 
+        make_struct(keyname,listobj[0])
+        # we're just going to ignore divergent nesting
+        gotype = keyname
+        annotation = f'`json:"{keyname}"`' if not annotation else annotation
+        return f'{keyname.lower().title().replace("_","")} []{gotype} {annotation}'
     # Case: Disparate types
     elif len(set([type(l) for l in listobj])) > 1:
         field_name = keyname
@@ -93,7 +98,7 @@ def make_list_field(keyname, listobj):
     else:
         field_name = keyname
         gotype = types[type(listobj[0]).__name__]
-        annotation = f'`json:"{keyname}"`' if keyname != "list" else '`json:""`'
+        annotation = f'`json:"{keyname}"`' if not annotation else annotation
         return f'{field_name.lower().title().replace("_","")} []{gotype} {annotation}'
 
 
