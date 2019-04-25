@@ -42,12 +42,12 @@ def make_struct(name, data):
     if isinstance(data,dict):
         for k, v in data.items():
             if isinstance(v, dict):
-                struct_lines.append(f'{k.lower().title().replace("_","")} {k} `json:"{k}"`')
+                struct_lines.append(f'{k.lower().title().replace("_","").replace(".","")} {k} `json:"{k}"`')
                 make_struct(k, v)
             elif isinstance(v, list):
                 struct_lines.append(make_list_field(k, v))
             else:
-                field_name = k.lower().title().replace("_","")
+                field_name = k.lower().title().replace("_","").replace(".","")
                 gotype = types[type(v).__name__]
                 annotation = f'`json:"{k}"`'
                 struct_lines.append(f"{field_name} {gotype} {annotation}")
@@ -77,18 +77,18 @@ def make_list_field(keyname, listobj):
     else:
         annotation = None # avoid reference before assignment
     if len(set([type(l) for l in listobj])) == 1 and isinstance(listobj[0],dict):
-        # We aren't actually testing if all keys are the same. 
+        # We aren't actually testing if all keys are the same.
         make_struct(keyname,listobj[0])
         # we're just going to ignore divergent nesting
         gotype = keyname
         annotation = f'`json:"{keyname}"`' if not annotation else annotation
-        return f'{keyname.lower().title().replace("_","")} []{gotype} {annotation}'
+        return f'{keyname.lower().title().replace("_","").replace(".","")} []{gotype} {annotation}'
     # Case: Disparate types
     elif len(set([type(l) for l in listobj])) > 1:
         field_name = keyname
         gotype = "interface{}"
         annotation = '`json:""`'
-        return f'{field_name.lower().title().replace("_","")} []{gotype} {annotation}'
+        return f'{field_name.lower().title().replace("_","").replace(".","")} []{gotype} {annotation}'
     # Case: List of lists
     elif not False in [isinstance(i,list) for i in listobj]:
         recursed_field = make_list_field(keyname,listobj[0])
@@ -99,7 +99,7 @@ def make_list_field(keyname, listobj):
         field_name = keyname
         gotype = types[type(listobj[0]).__name__]
         annotation = f'`json:"{keyname}"`' if not annotation else annotation
-        return f'{field_name.lower().title().replace("_","")} []{gotype} {annotation}'
+        return f'{field_name.lower().title().replace("_","").replace(".","")} []{gotype} {annotation}'
 
 
 if __name__ == "__main__":
