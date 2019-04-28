@@ -110,7 +110,7 @@ class StructFactory:
             # We aren't actually testing if all keys are the same.
             self.make_struct(keyname, listobj[0])
             # we're just going to ignore divergent nesting
-            gotype = keyname
+            gotype = self.prefix+keyname
             annotation = f'`json:"{keyname}"`' if not annotation else annotation
             return f'{keyname.lower().title().replace("_","").replace(".","")} []{gotype} {annotation}'
         # Case: Disparate types
